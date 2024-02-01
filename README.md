@@ -1,53 +1,84 @@
-# WEB102 Prework - *Sea Monster Game Funding *
+# Food Delivery App Database Analysis
+i have created a dummy data for a food delivary app and ran some sql operations on these datasets which can be found on #script.sql file to analyze the data. 
 
-Submitted by: **Sadman AL Nahian**
+This repository contains the database schema and operations for the Food Delivery App. The database consists of the following tables:
 
-**Sea Monster Game Funding** is a website for the company Sea Monster Crowdfunding that displays information about the games they have funded.
+## Tables
 
-Time spent: **5** hours spent in total
+### 1. Sales Table
 
-## Required Features
+#### Schema
 
-The following **required** functionality is completed:
+```sql
+CREATE TABLE sales (
+    userid INT,
+    created_date DATE,
+    product_id INT
+);
+Description:
+The sales table records information about the products sold, including the user ID, creation date, and product ID.
 
-* [ ] The introduction section explains the background of the company and how many games remain unfunded.
-* [ ] The Stats section includes information about the total contributions and dollars raised as well as the top two most funded games.
-* [ ] The Our Games section initially displays all games funded by Sea Monster Crowdfunding
-* [ ] The Our Games section has three buttons that allow the user to display only unfunded games, only funded games, or all games.
+CREATE TABLE product (
+    product_id INT,
+    product_name TEXT,
+    price INT
+);
 
-The following **optional** features are implemented:
+Description:
+The product table stores details about each product, such as the product ID, product name, and price.
 
-* [ ] List anything else that you can get done to improve the app functionality!
+CREATE TABLE users (
+    userid INT,
+    signup_date DATE
+);
 
-## Video Walkthrough
+Description:
+The users table maintains information about the users, including the user ID and signup date.
 
-Here's a walkthrough of implemented features:
 
-<img src="preview.gif" title='Video Walkthrough' width='' alt='Video Walkthrough' />
+CREATE TABLE goldusers_signup (
+    userid INT,
+    gold_signup_date DATE
+);
 
-<!-- Replace this with whatever GIF tool you used! -->
-GIF created with LICEcap  
-<!-- Recommended tools:
-[Kap](https://getkap.co/) for macOS
-[ScreenToGif](https://www.screentogif.com/) for Windows
-[peek](https://github.com/phw/peek) for Linux. -->
+Description:
+The goldusers_signup table contains details about users who have signed up for a premium or gold membership, including the user ID and gold signup date.
 
-## Notes
 
-Describe any challenges encountered while building the app.
+Database Operations:
 
-## License
+# 1. Find the Last Person Who Bought Membership
 
-    Copyright [yyyy] [name of copyright owner]
+SELECT * FROM goldusers_signup ORDER BY gold_signup_date DESC LIMIT 1;
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
+# 2. Count Total Products in Service
 
-        http://www.apache.org/licenses/LICENSE-2.0
+SELECT COUNT(DISTINCT(product_id)) AS count FROM product;
 
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+#3. Identify User with the Most Purchased Items
+
+SELECT userid, COUNT(product_id) AS count FROM sales GROUP BY userid ORDER BY count DESC LIMIT 1;
+
+#4. what is the total amount each customer spend on app
+
+select a.userid ,sum(b.price) total_amt_spent from sales a inner join product b on a.product_id=b.product_id
+ -> group by a.userid;
+
+#5. how many days each customers visited app
+
+select userid,count(distinct created_date) as total_days from sales group by userid;
+
+#6. what is the first product purchased by each customers
+
+SELECT * FROM ( SELECT *,  RANK() OVER (PARTITION BY userid ORDER BY created_date) AS rnk FROM sales ) a WHERE rnk = 1;
+
+#7. what is the most purchased item
+
+select product_id,count(product_id) as total_bought from sales group by product_id limit 1;
+
+#8.  what is the most purchased item and how many time each user has bought it
+
+select userid,count(product_id)from sales where product_id =( select product_id from sales group by product_id limit 1) group by userid;
+
+Contributors:
+Sadman AL Nahian
